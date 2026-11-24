@@ -244,3 +244,23 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
   }
 });
+function formatShortDate(raw) {
+  if (!raw) return '—';
+  const str = String(raw).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    return d.toISOString().slice(0, 10);
+  }
+  return str;
+}
+
+function formatShortTime(raw) {
+  if (!raw) return '—';
+  const str = String(raw).trim();
+  const match = str.match(/(\d{1,2}):(\d{2})/);
+  if (match) {
+    return `${match[1].padStart(2, '0')}:${match[2]}`;
+  }
+  return str;
+}
