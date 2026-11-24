@@ -47,12 +47,42 @@ const modalSubmitBtn = document.getElementById('modal-submit-btn');
 
 updateSoundButton();
 
-// دخول تلقائي لو الرمز محفوظ في الجلسة
-const savedPin = sessionStorage.getItem(PIN_STORAGE_KEY);
-if (savedPin) {
-  adminPin = savedPin;
-  enterDashboard();
+function showDashboardView() {
+  loginView.classList.add('hidden');
+  loginError.classList.add('hidden');
+  dashboardView.classList.remove('hidden');
+  adminToolbar.classList.remove('hidden');
 }
+
+function showLoginView(errorMsg = '') {
+  stopAutoRefresh();
+  adminPin = '';
+  isFirstLoad = true;
+  knownPendingIds.clear();
+  try {
+    sessionStorage.removeItem(PIN_STORAGE_KEY);
+  } catch {}
+  dashboardView.classList.add('hidden');
+  adminToolbar.classList.add('hidden');
+  loginView.classList.remove('hidden');
+  if (errorMsg) {
+    loginError.textContent = errorMsg;
+    loginError.classList.remove('hidden');
+  } else {
+    loginError.classList.add('hidden');
+  }
+}
+
+// دخول تلقائي لو الرمز محفوظ في الجلسة
+try {
+  const savedPin = sessionStorage.getItem(PIN_STORAGE_KEY);
+  if (savedPin) {
+    adminPin = savedPin;
+    showDashboardView();
+    fetchAdminData(adminPin, { silent: false });
+    startAutoRefresh();
+  }
+} catch {}
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -68,23 +98,20 @@ loginForm.addEventListener('submit', async (e) => {
 
   if (ok) {
     adminPin = pinVal;
-    sessionStorage.setItem(PIN_STORAGE_KEY, pinVal);
-    enterDashboard();
+    try {
+      sessionStorage.setItem(PIN_STORAGE_KEY, pinVal);
+    } catch {}
+    showDashboardView();
+    startAutoRefresh();
   }
 });
-
-function enterDashboard() {
-  loginView.classList.add('hidden');
-  dashboardView.classList.remove('hidden');
-  adminToolbar.classList.remove('hidden');
-  fetchAdminData(adminPin, { silent: false });
-  startAutoRefresh();
-}
 
 function startAutoRefresh() {
   stopAutoRefresh();
   pollTimer = setInterval(() => {
-    fetchAdminData(adminPin, { silent: true });
+    if (adminPin) {
+      fetchAdminData(adminPin, { silent: true });
+    }
   }, REFRESH_INTERVAL_MS);
 }
 
@@ -96,15 +123,8 @@ function stopAutoRefresh() {
 }
 
 logoutBtn.addEventListener('click', () => {
-  stopAutoRefresh();
-  sessionStorage.removeItem(PIN_STORAGE_KEY);
-  adminPin = '';
-  isFirstLoad = true;
-  knownPendingIds.clear();
-  dashboardView.classList.add('hidden');
-  adminToolbar.classList.add('hidden');
-  loginView.classList.remove('hidden');
   pinInput.value = '';
+  showLoginView('');
 });
 
 soundToggleBtn.addEventListener('click', () => {
@@ -149,8 +169,8 @@ async function fetchAdminData(pin, opts = {}) {
       if (showErrorsInLogin) {
         loginError.textContent = json.message || 'رمز المرور غير صحيح';
         loginError.classList.remove('hidden');
-      } else {
-        logoutBtn.click();
+      } else if (!silent) {
+        showLoginView(json.message || 'رمز المرور غير صحيح، أعد تسجيل الدخول');
       }
       return false;
     }
@@ -261,6 +281,8 @@ function renderAdminList() {
   listEl.innerHTML = filtered.map(req => {
     const statusText = statusLabels[req.status] || req.status;
     const urgentBadge = req.priority === 'Urgent' ? '<span class="urgent-pill">مستعجل</span>' : '';
+    const shortDate = formatShortDate(req.trip_date);
+    const shortTime = formatShortTime(req.trip_time);
 
     let decisionInfoHtml = '';
     if (req.status === 'Approved') {
@@ -286,7 +308,7 @@ function renderAdminList() {
       </div>
     ` : '';
 
-    const whatsappButtons = req.status === 'Approved' ? buildWhatsAppButtons(req) : '';
+    const whatsappButtons = req.status === 'Approved' ? buildWhatsAppButtons(req, shortDate, shortTime) : '';
 
     return `
       <article class="request-item">
@@ -301,7 +323,7 @@ function renderAdminList() {
         <div class="admin-card-grid">
           <div>الموظف: <strong>${escapeHtml(req.employee_name)}</strong> (${escapeHtml(req.department)})</div>
           <div>موبايل الموظف: <strong>${escapeHtml(req.phone)}</strong></div>
-          <div>الميعاد: <strong>${escapeHtml(req.trip_date)} - ${escapeHtml(req.trip_time)}</strong></div>
+          <div>الميعاد: <strong>${escapeHtml(shortDate)} - ${escapeHtml(shortTime)}</strong></div>
           <div>الوجهة: <strong>${escapeHtml(req.destination)}</strong></div>
           <div style="grid-column: 1 / -1;">الغرض / ملاحظات: <strong>${escapeHtml(req.purpose || '—')}</strong></div>
         </div>
@@ -320,14 +342,14 @@ function renderAdminList() {
   }).join('');
 }
 
-function buildWhatsAppButtons(req) {
+function buildWhatsAppButtons(req, shortDate, shortTime) {
   const empPhone = normalizeEgyptPhone(req.phone);
   const drvPhone = normalizeEgyptPhone(req.driver_phone);
 
   const empMsg = [
     `مرحباً ${req.employee_name}، تمت الموافقة على طلب السيارة (${req.request_id}).`,
     `الوجهة: ${req.destination}`,
-    `الميعاد: ${req.trip_date} الساعة ${req.trip_time}`,
+    `الميعاد: ${shortDate} الساعة ${shortTime}`,
     `السائق: ${req.driver_name || ''}`,
     `رقم السائق: ${req.driver_phone || ''}`,
     req.manager_note ? `ملاحظات: ${req.manager_note}` : ''
@@ -338,7 +360,7 @@ function buildWhatsAppButtons(req) {
     `الموظف: ${req.employee_name} (${req.department})`,
     `موبايل الموظف: ${req.phone}`,
     `الوجهة: ${req.destination}`,
-    `الميعاد: ${req.trip_date} الساعة ${req.trip_time}`,
+    `الميعاد: ${shortDate} الساعة ${shortTime}`,
     req.purpose ? `ملاحظات المشوار: ${req.purpose}` : ''
   ].filter(Boolean).join('\n');
 
@@ -370,7 +392,7 @@ function openDecisionModal(requestId, type) {
   activeModalRequest = req;
   activeDecisionType = type;
 
-  modalSummary.textContent = `${req.request_id} — ${req.employee_name} إلى (${req.destination}) يوم ${req.trip_date} الساعة ${req.trip_time}`;
+  modalSummary.textContent = `${req.request_id} — ${req.employee_name} إلى (${req.destination}) يوم ${formatShortDate(req.trip_date)} الساعة ${formatShortTime(req.trip_time)}`;
   approveNote.value = '';
   rejectNote.value = '';
 
@@ -491,6 +513,7 @@ function escapeHtml(str) {
 function escapeAttr(str) {
   return escapeHtml(str);
 }
+
 /* منع كليك يمين واختصارات F12 وأدوات المطور */
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault();
@@ -513,3 +536,24 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
   }
 });
+
+function formatShortDate(raw) {
+  if (!raw) return '—';
+  const str = String(raw).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    return d.toISOString().slice(0, 10);
+  }
+  return str;
+}
+
+function formatShortTime(raw) {
+  if (!raw) return '—';
+  const str = String(raw).trim();
+  const match = str.match(/(\d{1,2}):(\d{2})/);
+  if (match) {
+    return `${match[1].padStart(2, '0')}:${match[2]}`;
+  }
+  return str;
+}
