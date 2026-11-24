@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>طلب سيارة | بوابة الموظفين</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>بوابة طلب السيارات</h1>
+          <p>حجز مشوار جديد ومتابعة حالة الطلب وبيانات السائق</p>
+        </div>
+      </div>
+    </header>
+
+    <nav class="segmented-nav" role="tablist">
+      <button type="button" class="nav-pill active" data-tab="request-tab">
+        <span>طلب سيارة</span>
+      </button>
+      <button type="button" class="nav-pill" data-tab="track-tab">
+        <span>متابعة طلباتي</span>
+        <span id="saved-count" class="count-chip">0</span>
+      </button>
+    </nav>
+
+    <main class="stage">
+      <!-- تبويب طلب سيارة -->
+      <section id="request-tab" class="tab-panel active">
+        <form id="car-request-form" class="modern-card">
+          <div class="form-grid">
+            <div class="field">
+              <label for="employee_name">اسم الموظف *</label>
+              <input type="text" id="employee_name" name="employee_name" required placeholder="اكتب اسمك الكامل" />
+            </div>
+
+            <div class="field">
+              <label for="department">القسم / الإدارة *</label>
+              <input type="text" id="department" name="department" required placeholder="مثال: الحسابات، المبيعات..." />
+            </div>
+
+            <div class="field">
+              <label for="phone">رقم الموبايل *</label>
+              <input type="tel" id="phone" name="phone" required placeholder="010xxxxxxxx" />
+            </div>
+
+            <div class="field">
+              <label for="priority">أولوية المشوار</label>
+              <select id="priority" name="priority">
+                <option value="Normal" selected>عادي</option>
+                <option value="Urgent">مستعجل</option>
+              </select>
+            </div>
+
+            <div class="field span-2">
+              <label for="destination">الوجهة / خط السير *</label>
+              <input type="text" id="destination" name="destination" required placeholder="مثال: فرع التجمع، العميل، المطار..." />
+            </div>
+
+            <div class="field">
+              <label for="trip_date">تاريخ التحرك *</label>
+              <input type="date" id="trip_date" name="trip_date" required />
+            </div>
+
+            <div class="field">
+              <label for="trip_time">وقت التحرك *</label>
+              <input type="time" id="trip_time" name="trip_time" required />
+            </div>
+
+            <div class="field span-2">
+              <label for="purpose">سبب المشوار أو ملاحظات</label>
+              <textarea id="purpose" name="purpose" rows="2" placeholder="أي تفاصيل إضافية تساعد مدير الحركة أو السائق..."></textarea>
+            </div>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn-accent">إرسال الطلب</button>
+        </form>
+
+        <div id="submit-result" class="notice-banner hidden" aria-live="polite"></div>
+      </section>
+
+      <!-- تبويب متابعة طلباتي -->
+      <section id="track-tab" class="tab-panel">
+        <div class="modern-card search-box">
+          <label for="search-id">البحث برقم الطلب</label>
+          <div class="search-controls">
+            <input type="text" id="search-id" placeholder="مثال: REQ-1001" />
+            <button type="button" id="search-btn" class="btn-navy">بحث</button>
+            <button type="button" id="refresh-my-btn" class="btn-ghost">تحديث</button>
+          </div>
+        </div>
+
+        <div id="requests-list" class="cards-stack">
+          <p class="placeholder-text">جاري تحميل طلباتك...</p>
+        </div>
+      </section>
+    </main>
+  </div>
+<footer class="site-footer">
+      <span>Developed by <strong>Mustafa Helal</strong></span>
+      <span class="sig-accent"> • Fleet Control</span>
+    </footer>
+  <script src="employee.js"></script>
+</body>
+</html>

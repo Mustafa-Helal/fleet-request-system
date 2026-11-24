@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة مدير الحركة | إدارة طلبات السيارات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="app-shell admin-shell">
+    <header class="top-bar admin-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>لوحة مدير الحركة</h1>
+          <p>متابعة الطلبات، تعيين السائقين، وإرسال إشعارات واتساب</p>
+        </div>
+      </div>
+
+      <div id="admin-toolbar" class="toolbar hidden">
+        <button type="button" id="sound-toggle-btn" class="btn-ghost btn-sm" title="تفعيل أو كتم صوت التنبيه">
+          الصوت: مفعل
+        </button>
+        <button type="button" id="manual-refresh-btn" class="btn-ghost btn-sm">تحديث الآن</button>
+        <button type="button" id="export-csv-btn" class="btn-navy btn-sm">تصدير CSV</button>
+        <button type="button" id="logout-btn" class="btn-ghost btn-sm">خروج</button>
+      </div>
+    </header>
+
+    <!-- شاشة تسجيل الدخول -->
+    <section id="login-view" class="login-wrap">
+      <form id="login-form" class="modern-card login-card">
+        <h2>دخول مدير الحركة</h2>
+        <p class="login-sub">أدخل رمز المرور للوصول إلى لوحة التحكم</p>
+        <div class="field">
+          <label for="admin-pin">رمز المرور (PIN)</label>
+          <input type="password" id="admin-pin" required placeholder="••••" autocomplete="current-password" />
+        </div>
+        <button type="submit" id="login-btn" class="btn-accent" style="margin-top: 14px;">دخول للوحة</button>
+        <div id="login-error" class="notice-banner error hidden"></div>
+      </form>
+    </section>
+
+    <!-- لوحة التحكم الرئيسية -->
+    <main id="dashboard-view" class="hidden">
+      <div class="sync-strip">
+        <span id="sync-status">التحديث التلقائي نشط (كل 45 ثانية)</span>
+        <span id="last-sync-time"></span>
+      </div>
+
+      <!-- كروت الملخص -->
+      <section class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">قيد المراجعة</span>
+          <strong class="stat-val stat-wait" id="stat-pending">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">تمت الموافقة</span>
+          <strong class="stat-val stat-ok" id="stat-approved">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">مرفوض</span>
+          <strong class="stat-val stat-no" id="stat-rejected">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">أكثر سائق</span>
+          <strong class="stat-val stat-navy" id="stat-top-driver">—</strong>
+          <small class="stat-sub" id="stat-top-driver-count"></small>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">أكثر قسم طلباً</span>
+          <strong class="stat-val stat-orange" id="stat-top-dept">—</strong>
+          <small class="stat-sub" id="stat-top-dept-count"></small>
+        </div>
+      </section>
+
+      <!-- فلاتر وبحث -->
+      <section class="modern-card filter-bar">
+        <div class="filter-tabs" role="tablist">
+          <button type="button" class="filter-pill active" data-filter="Pending">قيد المراجعة</button>
+          <button type="button" class="filter-pill" data-filter="Approved">تمت الموافقة</button>
+          <button type="button" class="filter-pill" data-filter="Rejected">مرفوض</button>
+          <button type="button" class="filter-pill" data-filter="ALL">الكل</button>
+        </div>
+        <div class="filter-search">
+          <input type="text" id="admin-search" placeholder="ابحث باسم الموظف، الوجهة، أو رقم الطلب..." />
+        </div>
+      </section>
+
+      <!-- قائمة الطلبات -->
+      <section id="admin-requests-list" class="cards-stack">
+        <p class="placeholder-text">جاري تحميل الطلبات...</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- نافذة اعتماد أو رفض الطلب -->
+  <div id="decision-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modal-title">اعتماد الطلب</h3>
+        <button type="button" id="modal-close-btn" class="icon-close" aria-label="إغلاق">×</button>
+      </div>
+
+      <p id="modal-summary" class="modal-summary"></p>
+
+      <form id="decision-form">
+        <div id="approve-fields">
+          <div class="field" style="margin-bottom: 12px;">
+            <label for="driver-select">اختر السائق *</label>
+            <select id="driver-select"></select>
+          </div>
+          <div class="field" style="margin-bottom: 14px;">
+            <label for="approve-note">ملاحظات إضافية (اختياري)</label>
+            <input type="text" id="approve-note" placeholder="مثال: الانتظار أمام البوابة الرئيسية" />
+          </div>
+        </div>
+
+        <div id="reject-fields" class="hidden">
+          <div class="field" style="margin-bottom: 14px;">
+            <label for="reject-note">سبب الرفض *</label>
+            <textarea id="reject-note" rows="2" placeholder="اكتب سبب رفض الطلب ليظهر للموظف..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" id="modal-submit-btn" class="btn-accent">تأكيد القرار</button>
+          <button type="button" id="modal-cancel-btn" class="btn-ghost">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+<footer class="site-footer">
+      <span>Developed by <strong>Mustafa Helal</strong></span>
+      <span class="sig-accent"> • Fleet Control</span>
+    </footer>
+  <script src="admin.js"></script>
+</body>
+</html>
