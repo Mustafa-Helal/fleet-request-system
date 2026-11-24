@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة مدير الحركة | إدارة طلبات السيارات</title>
+  <title>إدارة طلبات السيارات</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -12,12 +12,18 @@
 </head>
 <body>
   <div class="app-shell admin-shell">
+
+
     <header class="top-bar admin-header">
+
+      <div class="brand-logo-box" aria-hidden="true">
+  <img src="Logo.png" alt="Logo" />
+</div>
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
           <h1>لوحة مدير الحركة</h1>
-          <p>متابعة الطلبات، تعيين السائقين، وإرسال إشعارات واتساب</p>
+          <p>متابعة الطلبات، تعيين السائقين</p>
         </div>
       </div>
 
@@ -34,13 +40,13 @@
     <!-- شاشة تسجيل الدخول -->
     <section id="login-view" class="login-wrap">
       <form id="login-form" class="modern-card login-card">
-        <h2>دخول مدير الحركة</h2>
-        <p class="login-sub">أدخل رمز المرور للوصول إلى لوحة التحكم</p>
+        <h2>تسجيل دخول</h2>
+        <p class="login-sub">أدخل رمز المرور لاظهار بيانات لوحة التحكم</p>
         <div class="field">
           <label for="admin-pin">رمز المرور (PIN)</label>
           <input type="password" id="admin-pin" required placeholder="••••" autocomplete="current-password" />
         </div>
-        <button type="submit" id="login-btn" class="btn-accent" style="margin-top: 14px;">دخول للوحة</button>
+        <button type="submit" id="login-btn" class="btn-accent" style="margin-top: 14px;">سجل </button>
         <div id="login-error" class="notice-banner error hidden"></div>
       </form>
     </section>
