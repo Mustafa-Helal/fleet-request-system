@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>طلب سيارة | بوابة الموظفين</title>
+  <title> بوابة الموظفين</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -12,10 +12,14 @@
 <body>
   <div class="app-shell">
     <header class="top-bar">
+
+        <div class="brand-logo-box" aria-hidden="true">
+  <img src="Logo.png" alt="Logo" />
+</div>
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
-          <h1>بوابة طلب السيارات</h1>
+          <h1>طلب السيارات</h1>
           <p>حجز مشوار جديد ومتابعة حالة الطلب وبيانات السائق</p>
         </div>
       </div>
@@ -61,7 +65,7 @@
 
             <div class="field span-2">
               <label for="destination">الوجهة / خط السير *</label>
-              <input type="text" id="destination" name="destination" required placeholder="مثال: فرع التجمع، العميل، المطار..." />
+              <input type="text" id="destination" name="destination" required placeholder="مثال:  التجمع، العاشر، المطار..." />
             </div>
 
             <div class="field">
@@ -75,7 +79,7 @@
             </div>
 
             <div class="field span-2">
-              <label for="purpose">سبب المشوار أو ملاحظات</label>
+              <label for="purpose">سبب المشوار او ملاحظات</label>
               <textarea id="purpose" name="purpose" rows="2" placeholder="أي تفاصيل إضافية تساعد مدير الحركة أو السائق..."></textarea>
             </div>
           </div>
